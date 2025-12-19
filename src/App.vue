@@ -11,11 +11,15 @@ export default defineComponent({
   data() {
     return {
       tarefas: [] as ITarefa[],
+      modoEscuroAtivo: false,
     }
   },
   methods: {
     salvarTarefa(tarefa: ITarefa) {
       this.tarefas.push(tarefa)
+    },
+    trocarTema(modoEscuroAtivo: boolean) {
+      this.modoEscuroAtivo = modoEscuroAtivo
     },
   },
   computed: {
@@ -27,14 +31,19 @@ export default defineComponent({
 </script>
 
 <template>
-  <main class="columns is-gapless is-multiline">
+  <main class="columns is-gapless is-multiline" :class="{'modo-escuro': modoEscuroAtivo}">
     <div class="column is-one-quarter">
-      <BarraLateral />
+      <BarraLateral @aoTemaAlterado="trocarTema" />
     </div>
-    <div class="column is-three-quarters">
+    <div class="column is-three-quarters conteudo">
       <Formulario @aoSalvarTarefa="salvarTarefa" />
       <div class="lista">
-        <Tarefa v-if="!listaEstaVazia" v-for="(tarefa, index) in tarefas" :tarefa="tarefa" :key="index" />
+        <Tarefa
+          v-if="!listaEstaVazia"
+          v-for="(tarefa, index) in tarefas"
+          :tarefa="tarefa"
+          :key="index"
+        />
         <Box v-else> Você não está muito produtivo hoje :( </Box>
       </div>
     </div>
@@ -44,5 +53,17 @@ export default defineComponent({
 <style scoped>
 .lista {
   padding: 1.25rem;
+}
+main {
+  --bg-primario: #fff;
+  --texto-primario: #000;
+}
+
+main.modo-escuro {
+  --bg-primario: #2b2d42;
+  --texto-primario: #ddd;
+}
+.conteudo {
+  background-color: var(--bg-primario);
 }
 </style>
