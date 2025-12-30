@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import Cronometro from '@/components/Cronometro.vue'
 import Temporizador from '@/components/Temporizador.vue'
 import { key } from '@/store'
@@ -9,26 +9,42 @@ export default defineComponent({
   name: 'Formulario',
   emits: ['aoSalvarTarefa'],
   components: { Temporizador, Cronometro },
-  data() {
-    return {
-      descricao: '',
-      idProjeto: ''
-    }
-  },
+  // data() {
+  //   return {
+  //     descricao: '',
+  //     idProjeto: '',
+  //   }
+  // },
   methods: {
-    finalizarTarefa(tempoDecorrido: string): void {
-      this.$emit('aoSalvarTarefa', {
-        duracaoEmSegundos: tempoDecorrido,
-        descricao: this.descricao,
-        projeto: this.projetos.find(proj => proj.id == this.idProjeto)
-      })
-      this.descricao = ''
-    },
+    // finalizarTarefa(tempoDecorrido: string): void {
+    //   this.$emit('aoSalvarTarefa', {
+    //     duracaoEmSegundos: tempoDecorrido,
+    //     descricao: this.descricao,
+    //     projeto: this.projetos.find((proj) => proj.id == this.idProjeto),
+    //   })
+    //   this.descricao = ''
+    // },
   },
-  setup() {
+  setup(props, { emit }) {
     const store = useStore(key)
+    const descricao = ref('')
+    const idProjeto = ref('')
+    const projetos = computed(() => store.state.projeto.projetos)
+
+    const finalizarTarefa = (tempoDecorrido: string): void => {
+      emit('aoSalvarTarefa', {
+        duracaoEmSegundos: tempoDecorrido,
+        descricao: descricao.value,
+        projeto: projetos.value.find((proj) => proj.id == idProjeto.value),
+      })
+      descricao.value = ''
+    }
+
     return {
-      projetos: computed(() => store.state.projetos),
+      projetos,
+      descricao,
+      idProjeto,
+      finalizarTarefa,
     }
   },
 })
@@ -49,11 +65,7 @@ export default defineComponent({
         <div class="select">
           <select v-model="idProjeto">
             <option value="">Selecione o projeto</option>
-            <option
-              :value="projeto.id"
-              v-for="projeto in projetos"
-              :key="projeto.id"
-            >
+            <option :value="projeto.id" v-for="projeto in projetos" :key="projeto.id">
               {{ projeto.nome }}
             </option>
           </select>

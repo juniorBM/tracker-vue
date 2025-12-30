@@ -1,34 +1,52 @@
 import type { IProjeto } from '@/intefaces/IProjeto.ts'
 import type { InjectionKey } from 'vue'
 import { createStore, Store, useStore as vuexUseStore } from 'vuex'
-import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO } from '@/store/tipoMutacoes.ts'
+import { ADICIONA_TAREFA, ALTERA_TAREFA, DEFINIR_TAREFAS } from '@/store/tipoMutacoes.ts'
+import { ALTERAR_TAREFA, CADASTRAR_TAREFA, OBTER_TAREFAS } from '@/store/tipoAcoes.ts'
+import http from '@/http'
+import type ITarefa from '@/intefaces/ITarefa.ts'
+import { type EstadoProjeto, projeto } from '@/store/modulos/projeto'
 
-interface Estado {
-  projetos: IProjeto[]
+export interface Estado {
+  tarefas: ITarefa[],
+  projeto: EstadoProjeto
 }
 
 export const key: InjectionKey<Store<Estado>> = Symbol()
 
 export const store = createStore<Estado>({
   state: {
-    projetos: [],
+    tarefas: [],
+    projeto: {
+      projetos: []
+    }
   },
   mutations: {
-    [ADICIONA_PROJETO](state, nomeDoProjeto: string) {
-      const projeto: IProjeto = {
-        id: new Date().toISOString(),
-        nome: nomeDoProjeto,
-      }
-      state.projetos.push(projeto)
+    [DEFINIR_TAREFAS](state, tarefas: ITarefa[]) {
+      state.tarefas = tarefas
     },
-    [ALTERA_PROJETO](state, projeto: IProjeto) {
-      const index = state.projetos.findIndex((proj) => proj.id === projeto.id)
-      state.projetos[index] = projeto
+    [ADICIONA_TAREFA](state, tarefa: ITarefa) {
+      state.tarefas.push(tarefa)
     },
-    [EXCLUIR_PROJETO](state, id: string) {
-      state.projetos = state.projetos.filter((projeto: IProjeto) => projeto.id != id)
+    [ALTERA_TAREFA](state, tarefa: ITarefa) {
+      const index = state.tarefas.findIndex((t) => t.id === tarefa.id)
+      state.tarefas[index] = tarefa
     },
   },
+  actions: {
+    [OBTER_TAREFAS]({ commit }) {
+      http.get('tarefas').then((resposta) => commit(DEFINIR_TAREFAS, resposta.data))
+    },
+    [CADASTRAR_TAREFA]({ commit }, tarefa: ITarefa) {
+      return http.post('tarefas', tarefa).then((resposta) => commit(ADICIONA_TAREFA, resposta.data))
+    },
+    [ALTERAR_TAREFA]({ commit }, tarefa: ITarefa) {
+      return http.put(`tarefas/${tarefa.id}`, tarefa).then(() => commit(ALTERA_TAREFA, tarefa))
+    },
+  },
+  modules: {
+    projeto
+  }
 })
 
 export function useStore(): Store<Estado> {
