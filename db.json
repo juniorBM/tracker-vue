@@ -28,12 +28,9 @@
       }
     },
     {
-      "id": "5397"
-    },
-    {
       "id": "7aae",
       "duracaoEmSegundos": 3,
-      "descricao": " NOVOOO teste",
+      "descricao": "NOVOOO teste",
       "projeto": {
         "id": "f6d6",
         "nome": "Meu projeto"

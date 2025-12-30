@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref, watchEffect } from 'vue'
 import Box from '@/components/Box.vue'
 import Tarefa from '@/components/Tarefa.vue'
 import Formulario from '@/components/Formulario.vue'
@@ -43,9 +43,19 @@ export default defineComponent({
     const store = useStore()
     store.dispatch(OBTER_TAREFAS)
     store.dispatch(OBTER_PROJETOS)
+    const filtro = ref('')
+    // const tarefas = computed(() =>
+    //   store.state.tarefas.filter((t: ITarefa) => !filtro.value || t.descricao?.includes(filtro.value)),
+    // )
+
+    watchEffect(() => {
+      store.dispatch(OBTER_TAREFAS, filtro.value)
+    })
+
     return {
       tarefas: computed(() => store.state.tarefas),
       store,
+      filtro,
     }
   },
 })
@@ -54,6 +64,15 @@ export default defineComponent({
 <template>
   <Formulario @aoSalvarTarefa="salvarTarefa" />
   <div class="lista">
+    <div class="field">
+      <p class="control has-icons-left">
+        <input v-model="filtro" class="input" type="text" placeholder="Digite para filtrar" />
+        <span class="icon is-small is-left">
+          <i class="fas fa-search"></i>
+        </span>
+      </p>
+    </div>
+
     <Tarefa
       @aoTarefaClicada="selecionarTarefa"
       v-if="!listaEstaVazia"
